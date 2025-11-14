@@ -37,7 +37,10 @@ Temp3pm           2.481094
 RainToday         2.241853
 RainTomorrow      2.245978
 
-? How do we want to proceed with missing values? I suggest that we delete values with over 10% of missing values for the modelling
+How  to proceed with missing values: 
+- delete entrys with over 10% of missing values
+- replace Nans for cateforical variables with mode
+- replace Nans for numerical variables with median
 
 First Observation
 ------------
@@ -45,11 +48,14 @@ If it rains today, there is 50% chance that it also rains tomorrow. If it dows n
 
 Preprocessing data
 ------------
-- How to proceed with nans?
-- transform date into year, month (and day) (I think the day should be irrelevant for the weather. Month and year could have an influence)
+- How  to proceed with missing values: 
+    - delete entrys with over 10% of missing values
+    - replace Nans for cateforical variables with mode
+    - replace Nans for numerical variables with median
+- delete Date column since it is not used for modelling
 - encode RainToday and RainTomorrow in binary variable (0/1)
-- encode location and variables for wind direction (Do you have a prefered Encoding?)
-- Other preprocessing steps?
+- encode location and variables for wind direction with get_dummies
+- Should we include Scaling?
 
 
 Project Organization
