@@ -51,3 +51,14 @@ Project Organization
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
+Step SQL)
+Task: store data in a local database (SQL)
+Solution: src/data/convert_data_to_sql.py 
+-> takes the big weatherAUS.cvs from this source: https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package?resource=download
+-> converts it into a table called weather_table in weather_australia.db and saev it in data/raw
+src/test.sql.py 
+-> checks for missing/extra columns and the right data type in the table (so far float or string)
+src/data/make_dataset.py
+-> loads the sql, ignores specific columns and simply filter (e.g the location) the big database. The results will be saved in data/raw
+--note: for first instances the data folder and the database are not gitignored!!
