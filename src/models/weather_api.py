@@ -10,14 +10,18 @@ responses = {
 }
 
 api = FastAPI(
-    title='weather forcasting api'
+    title='API for weather forcasting',
+    description="""
+    This is a weather forcasting API controlling the training and predicting processes.
+    """,
+    version='0.1.0'
 )
 
 @api.get('/')
 def get_index():
     return {'greeting': 'Welcome to weather forcasting api!'}
 
-@api.get('/predict', responses=responses)
+@api.get('/predict', name='Predict The Weather', responses=responses)
 def get_predict():
     try:
         # TODO: call the prediction model routine
@@ -25,7 +29,7 @@ def get_predict():
     except Exception as e:
         return {'error': str(e)}
 
-@api.get('/training', responses=responses)
+@api.get('/training', name='Train The Model with existing data', responses=responses)
 def get_training():
     try:
         # TODO: call the traning model routine
