@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 
 
 
@@ -14,7 +15,7 @@ def vector_normalize(X):
 #############
 #Read file
 
-df= pd.read_csv(r"weatherAUS.csv")
+df= pd.read_csv(r"data/raw/weatherAUS.csv")
 
 #################
 #Handeling Nans
@@ -62,4 +63,6 @@ df = pd.get_dummies(df, dtype=float)
 
 #############
 #Exporting file
-df.to_csv(r"weatherAUS_preprocessed.csv")
+
+os.makedirs("data/processed", exist_ok=True)
+df.to_csv(r"data/processed/weatherAUS_preprocessed.csv")
