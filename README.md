@@ -133,3 +133,10 @@ STEP-BY-STEP guide
 - running the script "test_table.spl.sql" (change the first line (USE {your schema name}))
     - it should create an output with 145460 (number of rows in the table)
 -> probably more useful in containerization
+
+
+MLFLOW
+
+- mlflow_server.sh 
+    * sets up the mlflow server (http://localhost:8080)
+- train model with simple mlflow architecture for tracking    

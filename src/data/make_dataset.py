@@ -5,7 +5,7 @@ SQL_PATH = 'data/raw/weather_australia.db'
 TABLE_NAME = 'weather_table'
 NEW_TABLE_NAME = 'weather_subset'
 
-TABLE_PERCENT = 0.1  # 10 percent of the data
+TABLE_PERCENT = 0.2  # 10 percent of the data
 
 engine = create_engine(f'sqlite:///{SQL_PATH}')
 
@@ -51,16 +51,24 @@ all locations:
 #query = f"SELECT {', '.join(columns_to_load)} FROM {TABLE_NAME} WHERE Location='Sydney'"
 
 
-# Filter random 10 % from the data
+# Filter random x % from the data
+with engine.connect() as conn:
+    conn.execute(text(
+        f"""
+        DROP TABLE IF EXISTS {NEW_TABLE_NAME};
+        """
+    ))
 
 with engine.connect() as conn:
+    total_rows = conn.execute(text(f"SELECT COUNT(*) FROM {TABLE_NAME}")).scalar()
+    sample_size = int(total_rows * TABLE_PERCENT)
     conn.execute(text(
         f"""
         CREATE TABLE {NEW_TABLE_NAME} AS
         SELECT *
         FROM {TABLE_NAME}
         ORDER BY RANDOM()
-        LIMIT (SELECT CAST(COUNT(*) * {TABLE_PERCENT} AS INT) FROM {TABLE_NAME})
+        LIMIT {sample_size}
         """
     ))
 
@@ -71,4 +79,4 @@ with engine.connect() as conn:
 
 df = pd.read_sql(f"SELECT * FROM {NEW_TABLE_NAME}", engine)
 
-df.to_csv('data/raw/weather_10percent.csv', index=False)
+df.to_csv('data/raw/weather_20percent.csv', index=False)
