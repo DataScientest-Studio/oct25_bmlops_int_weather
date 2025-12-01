@@ -41,11 +41,11 @@ df = df.where(pd.notnull(df), None)
 
 def save_data_sql(df, SAVE_PATH, TABLE_NAME):
     try:
-    engine = create_engine(f'sqlite:///{SAVE_PATH}')
-    df.to_sql(TABLE_NAME, con=engine, if_exists='replace', index=False)
-    print(f"Data has been successfully converted and stored in '{SAVE_PATH}' as table '{TABLE_NAME}'.")
+        engine = create_engine(f'sqlite:///{SAVE_PATH}')
+        df.to_sql(TABLE_NAME, con=engine, if_exists='replace', index=False)
+        print(f"Data has been successfully converted and stored in '{SAVE_PATH}' as table '{TABLE_NAME}'.")
     except: 
-    print(f"Error! '{TABLE_NAME}' could not be sucessfully converted into a database.")
+        print(f"Error! '{TABLE_NAME}' could not be sucessfully converted into a database.")
 
 if __name__ == "__main__":
     save_data_sql(df, SAVE_PATH, TABLE_NAME)
