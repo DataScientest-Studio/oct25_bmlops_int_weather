@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 
 
 ###################################################
-def training():
+def training() -> mlflow.models.model.ModelInfo: 
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
@@ -61,9 +61,10 @@ def training():
         "GradientBoosting": GradientBoostingClassifier(**params["GradientBoosting"]),
         }
 
-    with mlflow.start_run(run_name="weather_20percent_best_model"):
-        first_model = True
-        for name, model in models.items():
+    # with mlflow.start_run(run_name="weather_20percent_best_model") as parent_run:
+    first_model = True
+    for name, model in models.items():
+        # with mlflow.start_run(run_name=name, nested=True) as child_run:
             model.fit(X_train_np, y_train_np)
             y_pred = model.predict(X_test_np)
 
@@ -90,16 +91,17 @@ def training():
                     best_name, best_acc, best_prec, best_rec, best_f1, best_model = name, acc, prec, rec, f1, model
 
 
-        mlflow.log_params(params[name])
+    with mlflow.start_run(run_name="weather_20percent_best_model") as run:
+        mlflow.log_params(params[best_name])
         # log best model metrics
         mlflow.log_metric("accuracy", best_acc)
         mlflow.log_metric("precision", best_prec)
         mlflow.log_metric("recall", best_rec)
         mlflow.log_metric("f1_score", best_f1)
         # log best model
-        mlflow.sklearn.log_model(sk_model=best_model,
-                                 name="best_model",
-                                 input_example=X_train_np[:1])
+        model_info = mlflow.sklearn.log_model(sk_model=best_model,
+                                              name="best_model",
+                                              input_example=X_train_np[:1])
 
     print("best model is saved.")
 
@@ -111,8 +113,10 @@ def training():
     joblib.dump(list(X.columns), FEATURES_PATH)
     print("training is finished.")
 
+    return model_info
+
 #####################################################
 
 
-if __name__ == "__main__":
-    training()
+# if __name__ == "__main__":
+#     training()
