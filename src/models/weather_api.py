@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from typing import Optional
 from train_model import training
 from predict_model import predict
 from dataclasses import dataclass
+import mlflow
 
 
 responses = {
@@ -30,18 +30,20 @@ class curr_status:
 
 training_status = curr_status()
 predict_status = curr_status()
+model_info = None
 
 
-def wrapper_train_model(status: curr_status):
-    status.status = "active"
-    training()
-    status.status = "inactive"
+def wrapper_train_model():
+    training_status.status = "active"
+    global model_info
+    model_info = training()
+    training_status.status = "inactive"
 
 
-def wrapper_predict(status: curr_status):
-    status.status = "active"
-    predict()
-    status.status = "inactive"
+def wrapper_predict(model_info: mlflow.models.model.ModelInfo):
+    predict_status.status = "active"
+    predict(model_info)
+    predict_status.status = "inactive"
 
 
 @api.get('/')
@@ -61,7 +63,7 @@ def get_predict(background_tasks: BackgroundTasks):
                 status_code=503,
                 detail='Prediction is in progress, please try again later')
         else:
-            background_tasks.add_task(wrapper_predict, predict_status)
+            background_tasks.add_task(wrapper_predict, model_info)
             return {'status': 'prediction started.'}
     except Exception as e:
         return {'error': str(e)}
@@ -76,7 +78,12 @@ def get_training(background_tasks: BackgroundTasks):
                 status_code=503,
                 detail='Training is in progress, please try again later')
         elif training_status.status == "inactive":
-            background_tasks.add_task(wrapper_train_model, training_status)
+            background_tasks.add_task(wrapper_train_model)
             return {'status': 'training started'}
     except Exception as e:
         return {'error': str(e)}
+
+
+# if __name__ == "__main__":
+#     wrapper_train_model()
+#     wrapper_predict(model_info)

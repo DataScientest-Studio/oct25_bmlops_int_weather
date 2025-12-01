@@ -1,4 +1,5 @@
 import os
+import mlflow
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import joblib
 import pandas as pd
@@ -6,14 +7,14 @@ import pandas as pd
 
 ##################################################
 
-def predict(input_path: str = "/home/ubuntu/oct25_bmlops_int_weather/data/processed/weatherAUS_preprocessed.csv", 
+def predict(model_info: mlflow.models.model.ModelInfo,
+            input_path: str = "/home/ubuntu/oct25_bmlops_int_weather/data/processed/weatherAUS_20percent_preprocessed.csv", 
             output_path: str = "/home/ubuntu/oct25_bmlops_int_weather/data/processed/weather_predictions.csv"):
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
-    MODEL_PATH = os.path.join(MODEL_DIR, "best_model.pkl")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
 
-    model = joblib.load(MODEL_PATH)
+    model = mlflow.sklearn.load_model(model_info.model_uri)
     feature_names = joblib.load(FEATURES_PATH)
 
     df = pd.read_csv(input_path)
