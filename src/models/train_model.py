@@ -13,14 +13,18 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 def training():
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
-    MODEL_PATH = os.path.join(MODEL_DIR, "best_model.pkl")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
     PROCESSED_PATH = os.path.join(THIS_DIR, "../../data/processed/weatherAUS_20percent_preprocessed.csv")
 
     # initialize mlflow experiment
-    mlflow.set_tracking_uri("http://localhost:8080") 
-    mlflow.set_experiment("MLflowTrackingWeatherAustralia_20percent")
-    mlflow.sklearn.autolog()
+    mlflow.set_tracking_uri("http://localhost:8080")
+    experiment = mlflow.get_experiment_by_name("MLflowTrackingWeatherAustralia_20percent")
+    if experiment is None:
+        experiment_id = mlflow.create_experiment("MLflowTrackingWeatherAustralia_20percent")
+    else:
+        experiment_id = experiment.experiment_id
+    mlflow.set_experiment(experiment_id=experiment_id)
+    # mlflow.sklearn.autolog()
 
     df = pd.read_csv(PROCESSED_PATH)
 
@@ -44,16 +48,20 @@ def training():
     print("train-test split is done.")
 
     # Define baseline models
-    # models = {
-    #     "KNeighbors": KNeighborsClassifier(n_neighbors=10), "DecisionTree": DecisionTreeClassifier(random_state=0), "RandomForest": RandomForestClassifier(n_estimators=10, random_state=5), "GradientBoosting": GradientBoostingClassifier(random_state=10),}
+    params = {
+        "KNeighbors": {"n_neighbors": 10},
+        "DecisionTree": {"max_depth": 10, "random_state": 42},
+        "RandomForest": {"n_estimators": 10, "max_depth": 10, "random_state": 42},
+        "GradientBoosting": {"random_state": 42},
+    }
     models = {
-        "KNeighbors": KNeighborsClassifier(n_neighbors=10, n_jobs=1),
-        "DecisionTree": DecisionTreeClassifier(random_state=42),
-        "RandomForest": RandomForestClassifier(n_estimators=10, random_state=42, n_jobs=1),
-        "GradientBoosting": GradientBoostingClassifier(random_state=42),
+        "KNeighbors": KNeighborsClassifier(**params["KNeighbors"]),
+        "DecisionTree": DecisionTreeClassifier(**params["DecisionTree"]),
+        "RandomForest": RandomForestClassifier(**params["RandomForest"]),
+        "GradientBoosting": GradientBoostingClassifier(**params["GradientBoosting"]),
         }
 
-    with mlflow.start_run(run_name="weather_10percent_best_model"):
+    with mlflow.start_run(run_name="weather_20percent_best_model"):
         first_model = True
         for name, model in models.items():
             model.fit(X_train_np, y_train_np)
@@ -81,28 +89,26 @@ def training():
                 if f1 > best_f1:
                     best_name, best_acc, best_prec, best_rec, best_f1, best_model = name, acc, prec, rec, f1, model
 
-        # log best model
-        mlflow.sklearn.log_model(sk_model=best_model, name="best_model")
 
+        mlflow.log_params(params[name])
         # log best model metrics
         mlflow.log_metric("accuracy", best_acc)
         mlflow.log_metric("precision", best_prec)
         mlflow.log_metric("recall", best_rec)
         mlflow.log_metric("f1_score", best_f1)
+        # log best model
+        mlflow.sklearn.log_model(sk_model=best_model,
+                                 name="best_model",
+                                 input_example=X_train_np[:1])
+
+    print("best model is saved.")
 
     mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
     print("\nBest model (by F1-score):")
-    print("  Name     : {best_name}")
-
-    # Save best model and feature list
-    # os.makedirs("models", exist_ok=True)
-    os.makedirs(MODEL_DIR, exist_ok=True)
-
-    joblib.dump(best_model, MODEL_PATH)
+    print(f"  Name     : {best_name}")
 
     joblib.dump(list(X.columns), FEATURES_PATH)
-    print("best model is saved.")
     print("training is finished.")
 
 #####################################################
