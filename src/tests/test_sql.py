@@ -31,7 +31,7 @@ column_names={
 }
 
 
-def test_connection(SQL_PATH, TABLE_NAME ):
+def test_connection():
     engine = create_engine(f'sqlite:///{SQL_PATH}')
 
     inspector = inspect(engine)
@@ -91,4 +91,4 @@ def test_connection(SQL_PATH, TABLE_NAME ):
     print(output)
     
 if __name__ == "__main__":
-    test_connection(SQL_PATH, TABLE_NAME)
+    test_connection()
