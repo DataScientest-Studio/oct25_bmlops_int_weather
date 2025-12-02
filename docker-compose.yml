@@ -1,0 +1,31 @@
+services:
+  # API
+  api:
+    depends_on:
+    image:
+    ports:
+      - "8080:8080"
+  # Database
+  rawdata:
+    depends_on:    
+    image:
+  # MLFlow
+  MLFlow:
+    depends_on:
+    image:
+  # Streamlit
+  Streamlit:
+    depends_on:
+    image:
+  # Preprocessing,DataSplitting and Normalization
+  Preprocessing:
+    depends_on:
+    image:
+  # Modeltraining
+  Training:
+    depends_on:
+    image:    
+  # Prediction
+  Prediction:
+    depends_on:
+    image:   
