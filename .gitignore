@@ -7,6 +7,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.venv/
 env/
 build/
 develop-eggs/
@@ -59,9 +60,9 @@ target/
 # DotEnv configuration
 .env
 
-# Database
-*.db
-*.rdb
+# # Database
+# *.db
+# *.rdb
 
 # Pycharm
 .idea
@@ -76,7 +77,8 @@ target/
 .ipynb_checkpoints/
 
 # exclude data from source control by default
-/data/
+data/raw/
+data/processed/
 
 # Mac OS-specific storage files
 .DS_Store
@@ -87,3 +89,7 @@ target/
 
 # Mypy cache
 .mypy_cache/
+/models/
+
+# MLflow files
+mlruns/
