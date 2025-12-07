@@ -80,7 +80,7 @@ target/
 data/raw/
 data/processed/
 
-!data/*.py
+!*.py
 
 # Mac OS-specific storage files
 .DS_Store
