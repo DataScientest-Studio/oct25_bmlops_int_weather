@@ -102,10 +102,10 @@ def training() -> mlflow.models.model.ModelInfo:
         model_info = mlflow.sklearn.log_model(sk_model=best_model,
                                               name="best_model",
                                               input_example=X_train_np[:1])
+        mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
     print("best model is saved.")
 
-    mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
     print("\nBest model (by F1-score):")
     print(f"  Name     : {best_name}")
