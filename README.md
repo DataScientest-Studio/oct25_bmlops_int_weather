@@ -135,6 +135,20 @@ STEP-BY-STEP guide
 -> probably more useful in containerization
 
 
+MySQL dockerization:
+
+- build Docker image:
+    - docker build -t weather-mysql .
+
+- in another terminal "docker ps" for container ID
+
+Enter MySQL client:
+- e.g. docker exec -it c3ecfcd4a529  mysql -u root -proot (Container ID = c3ecfcd4a529, Password= root)
+check the table with USE weather_db;SELECT COUNT(*) FROM weather_data;SELECT * FROM weather LIMIT 5; -> Outcome: 14560
+- exit with quit
+
+
+
 MLFLOW
 
 - mlflow_server.sh 

@@ -1,41 +1,49 @@
 services:
-  # API
-  api:
-    depends_on:
-    image:
-    ports:
-      - "8080:8080"
+  # # API
+  # api:
+  #   depends_on:
+  #   image:
+  #   ports:
+  #     - "8080:8080"
   # Database
-  rawdata:
-    depends_on:    
-    image:
-  # MLFlow
-  MLFlow:
-    depends_on:
-    image:
-  # Streamlit
-  Streamlit:
-    depends_on:
-    image:
+  rawdata: 
+    build: ./mysql
+    container_name: weather-mysql
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "3307:3306"  # 3306 is not working for my setup, probably blocked by MySQL Workbench
+  # # MLFlow
+  # MLFlow:
+  #   depends_on:
+  #   image:
+  # # Streamlit
+  # Streamlit:
+  #   depends_on:
+  #   image:
   # Preprocessing,DataSplitting and Normalization
-  Preprocessing:
-    depends_on:
-    image:
-  # Modeltraining
-  Training:
-    image: weather-training:latest
-    # Uncomment and adjust if you run MLflow in a separate service
-    # environment:
-    #   - MLFLOW_TRACKING_URI=http://mlflow:8080
+  preprocessing:
+    depends_on: 
+    - rawdata
+    build: ./make_and_process_data
+    container_name: weather-preprocessing
     volumes:
       - ./data:/app/data
-      - ./mlartifacts:/app/mlartifacts
-  # Prediction
-  Prediction:
-    image: weather-training:latest
-    depends_on:
-      - Training
-    volumes:
-      - ./data:/app/data
-      - ./mlartifacts:/app/mlartifacts
-    command: ["python", "-u", "src/models/predict_model.py", "/app/data/processed/weatherAUS_10percent_preprocessed.csv", "/app/data/processed/weather_predictions.csv"]
+  # # Modeltraining
+  # Training:
+  #   image: weather-training:latest
+  #   # Uncomment and adjust if you run MLflow in a separate service
+  #   # environment:
+  #   #   - MLFLOW_TRACKING_URI=http://mlflow:8080
+  #   volumes:
+  #     - ./data:/app/data
+  #     - ./mlartifacts:/app/mlartifacts
+  # # Prediction
+  # Prediction:
+  #   image: weather-training:latest
+  #   depends_on:
+  #     - Training
+  #   volumes:
+  #     - ./data:/app/data
+  #     - ./mlartifacts:/app/mlartifacts
+  #   command: ["python", "-u", "src/models/predict_model.py", "/app/data/processed/weatherAUS_10percent_preprocessed.csv", "/app/data/processed/weather_predictions.csv"]
