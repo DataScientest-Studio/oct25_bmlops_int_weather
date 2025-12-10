@@ -1,18 +1,27 @@
 from datetime import datetime
+import os
 import pandas as pd
 from sqlalchemy import create_engine, text
 
+MYSQL_USER = "root"
+MYSQL_PASSWORD = "root"
+MYSQL_HOST = "weather-mysql"  # Network? eg my_network
+MYSQL_PORT = 3307
+MYSQL_DB = "weather_db"
 
-SQL_PATH = 'data/raw/weather_australia.db'
+
 TABLE_NAME = 'weather_table'
 NEW_TABLE_NAME = 'weather_subset'
-
+OUTPUT_DIR= "./data:/app/data"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 DATE = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-OUTPUT_FILE = f'data/raw/weather_subset_{DATE}.csv'
+OUTPUT_FILE = f'{OUTPUT_DIR}/weather_subset_{DATE}.csv'
 
-TABLE_PERCENT = 0.2  # 20 percent of the data
+TABLE_PERCENT = 0.2  # x percent of the data
 
-engine = create_engine(f'sqlite:///{SQL_PATH}')
+engine = create_engine(
+    f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+)
 
 columns_to_load = [ # comment the columns you want to drop
     'Date', 
