@@ -155,24 +155,38 @@ mlflow server --host 0.0.0.0 --port 8080 --backend-store-uri sqlite:///mlflow.db
 docker build -t weather-training -f docker/training/Dockerfile.training .
 ```
 
-3) Run training in Docker (set MLFLOW_TRACKING_URI to your host IP):
+3) Run training in Docker (set MLFLOW_TRACKING_URI to your host MLflow URL):
 ```
 docker run --rm -e MLFLOW_TRACKING_URI=http://<your-host-ip>:8080 weather-training python -u src/models/train_model.py
 ```
 
 Docker (prediction container)
 -----------------------------
-Prediction uses the latest trained model from local MLflow artifacts (`mlartifacts`) and writes a CSV with predictions.
+Prediction uses the latest trained model from local MLflow artifacts (`mlartifacts`) and writes a CSV with predictions.  
+Training and prediction both use the **same Docker image** (`weather-training`); only the command and mounted volumes differ.
 
 1) Make sure training has been run at least once (so `mlartifacts/**/artifacts/model.pkl` exists).
 
-2) Run prediction in Docker (host paths, from repo root):
+2) Run prediction in Docker from the repo root.
+
+**Linux / macOS:**
+```bash
+docker run --rm -it \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/mlartifacts:/app/mlartifacts" \
+  weather-training python -u src/models/predict_model.py \
+    /app/data/processed/weatherAUS_10percent_preprocessed.csv \
+    /app/data/processed/weather_predictions.csv
 ```
-docker run --rm -it ^
-  -v "C:/Users/ASK IT SOLUTION/Documents/MLOP/oct25_bmlops_int_weather/data:/app/data" ^
-  -v "C:/Users/ASK IT SOLUTION/Documents/MLOP/oct25_bmlops_int_weather/mlartifacts:/app/mlartifacts" ^
-  weather-training python -u src/models/predict_model.py ^
-    /app/data/processed/weatherAUS_10percent_preprocessed.csv ^
+
+**Windows PowerShell:**
+```powershell
+$proj = (Get-Location).Path
+docker run --rm -it `
+  -v "$proj\data:/app/data" `
+  -v "$proj\mlartifacts:/app/mlartifacts" `
+  weather-training python -u src/models/predict_model.py `
+    /app/data/processed/weatherAUS_10percent_preprocessed.csv `
     /app/data/processed/weather_predictions.csv
 ```
 

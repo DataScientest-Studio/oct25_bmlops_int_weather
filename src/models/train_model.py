@@ -17,7 +17,7 @@ def training() -> mlflow.models.model.ModelInfo:
     PROCESSED_PATH = os.path.join(THIS_DIR, "../../data/processed/weatherAUS_10percent_preprocessed.csv")
 
     # initialize mlflow experiment; allow override via env for Docker
-    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:8080"))
     experiment = mlflow.get_experiment_by_name("MLflowTrackingWeatherAustralia_10percent")
     if experiment is None:
         experiment_id = mlflow.create_experiment("MLflowTrackingWeatherAustralia_10percent")
