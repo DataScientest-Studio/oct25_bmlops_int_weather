@@ -117,7 +117,7 @@ src/test.sql.py
 src/data/make_dataset.py
 -> loads the sql, ignores specific columns and simply filter (e.g the location) the big database. The results will be saved in data/raw
 --note: for first instances the data folder and the database are not gitignored!!
--> make dataset filters the .db for e.g location or select a random amonúnt of data for the subset
+-> make dataset filters the .db for e.g location or select a random amonúnt of data for the subset and save it as .csv with current date
 
 Working with a real MySQL project.
 - no databases are shared directly, raw data is weatherAUS.csv
@@ -155,7 +155,7 @@ mlflow server --host 0.0.0.0 --port 8080 --backend-store-uri sqlite:///mlflow.db
 docker build -t weather-training -f docker/training/Dockerfile.training .
 ```
 
-3) Run training in Docker (set MLFLOW_TRACKING_URI to your host MLflow URL):
+3) Run training in Docker (set MLFLOW_TRACKING_URI to your host IP):
 ```
 docker run --rm -e MLFLOW_TRACKING_URI=http://<your-host-ip>:8080 weather-training python -u src/models/train_model.py
 ```

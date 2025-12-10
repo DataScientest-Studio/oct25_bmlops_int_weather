@@ -1,11 +1,16 @@
+from datetime import datetime
 import pandas as pd
 from sqlalchemy import create_engine, text
+
 
 SQL_PATH = 'data/raw/weather_australia.db'
 TABLE_NAME = 'weather_table'
 NEW_TABLE_NAME = 'weather_subset'
 
-TABLE_PERCENT = 0.2  # 10 percent of the data
+DATE = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+OUTPUT_FILE = f'data/raw/weather_subset_{DATE}.csv'
+
+TABLE_PERCENT = 0.2  # 20 percent of the data
 
 engine = create_engine(f'sqlite:///{SQL_PATH}')
 
@@ -79,4 +84,4 @@ with engine.connect() as conn:
 
 df = pd.read_sql(f"SELECT * FROM {NEW_TABLE_NAME}", engine)
 
-df.to_csv('data/raw/weather_20percent.csv', index=False)
+df.to_csv(OUTPUT_FILE, index=False)
