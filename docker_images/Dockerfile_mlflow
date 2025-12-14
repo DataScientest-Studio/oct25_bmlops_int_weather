@@ -1,0 +1,17 @@
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN apt-get update && apt-get install -y curl && \
+  curl -LsSf https://astral.sh/uv/install.sh | sh &&  \
+  $HOME/.local/bin/uv sync && . .venv/bin/activate
+ENV PATH="/app/.venv/bin:$PATH"
+EXPOSE 8080
+CMD mlflow server \
+  --host 0.0.0.0 \
+  --port 8080 \
+  --allowed-hosts '*' \
+  --cors-allowed-origins '*' \
+  --backend-store-uri file:///app/models \
+  --default-artifact-root file:///app/models \
+  --serve-artifacts
