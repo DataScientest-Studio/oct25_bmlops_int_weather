@@ -62,6 +62,10 @@ def get_predict(background_tasks: BackgroundTasks):
             raise HTTPException(
                 status_code=503,
                 detail='Prediction is in progress, please try again later')
+        elif model_info is None:
+            raise HTTPException(
+                status_code=404,
+                detail='Model not found, please train the model first')
         else:
             background_tasks.add_task(wrapper_predict, model_info)
             return {'status': 'prediction started.'}

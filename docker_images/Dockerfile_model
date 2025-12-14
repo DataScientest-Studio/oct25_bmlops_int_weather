@@ -1,13 +1,13 @@
 FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y curl git
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY src ./src
 COPY .git ./git
 COPY data/processed ./data/processed
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    $HOME/.local/bin/uv sync && . .venv/bin/activate
+RUN apt-get update && apt-get install -y curl git && \
+  curl -LsSf https://astral.sh/uv/install.sh | sh && \
+  $HOME/.local/bin/uv sync && . .venv/bin/activate
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 WORKDIR /app/src/models
