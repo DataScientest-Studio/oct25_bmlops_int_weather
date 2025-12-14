@@ -141,8 +141,31 @@ MLFLOW
     * sets up the mlflow server (http://localhost:8080)
 - train model with simple mlflow architecture for tracking    
 
-Docker (training container)
+Dockerization 
 ---------------------------
+MLFlow and model(containing training, predicting and FastAPI) services are added to `docker-compose.yml`.
+The MLflow image is located at `docker_images/Dockerfile_mlflow`, while the model image is at `docker_images/Dockerfile_model`.
+
+- to start(or build if not exists) the containers:
+```bash
+docker-compose up
+```
+- to test the FastAPI:
+```bash
+# in a new terminal
+docker-compose start test_model
+```
+- to train the model
+```bash
+# in a new terminal
+docker-compose start training
+```
+- to predict
+```bash
+# in a new terminal
+docker-compose start predict
+```
+
 Use the training image built from `docker/training/Dockerfile.training`.
 
 1) Start MLflow on host (repo root, venv optional):
