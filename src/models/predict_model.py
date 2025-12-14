@@ -1,7 +1,5 @@
 import os
 import mlflow
-import glob
-from pathlib import Path
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import joblib
 import pandas as pd
@@ -24,26 +22,6 @@ def predict(model_info: mlflow.models.model.ModelInfo,
         output_path = os.path.join(THIS_DIR, "../../data/processed/weather_predictions.csv")
 
     model = mlflow.sklearn.load_model(model_info.model_uri)
-    # allow MLflow host override (Docker)
-    MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:8080")
-    mlflow.set_tracking_uri(MLFLOW_URI)
-
-    # Load model from local MLflow artifacts (latest model.pkl under mlartifacts)
-    artifacts_root = Path(THIS_DIR).resolve().joinpath("..", "..", "mlartifacts")
-    candidates = sorted(
-        artifacts_root.glob("**/artifacts/model.pkl"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
-    if not candidates:
-        raise ValueError(
-            "No MLflow model artifacts found under mlartifacts/**/artifacts/model.pkl. "
-            "Run training first."
-        )
-    model_path = candidates[0]
-    print(f"Loading local model from: {model_path}")
-    model = joblib.load(model_path)
-    print("Model loaded.")
 
     feature_names = joblib.load(FEATURES_PATH)
 
@@ -88,5 +66,5 @@ def predict(model_info: mlflow.models.model.ModelInfo,
 ######################################################
 
 
-if __name__ == "__main__":
-    predict()
+# if __name__ == "__main__":
+#     predict()
