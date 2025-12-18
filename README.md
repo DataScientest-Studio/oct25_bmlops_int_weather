@@ -231,3 +231,9 @@ This will:
 - Load the latest `model.pkl` from `mlartifacts/**/artifacts/model.pkl`
 - Evaluate on the input file
 - Save predictions to `data/processed/weather_predictions.csv` on the host.
+
+
+Crontab:
+
+will trigger the docker compose build and docker compose up
+each day at 3 am
