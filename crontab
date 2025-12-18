@@ -1,0 +1,1 @@
+0 3 * * * /cron_pipeline.sh >> /pipeline.log 2>&1
