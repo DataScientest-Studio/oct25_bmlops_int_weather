@@ -155,8 +155,31 @@ MLFLOW
     * sets up the mlflow server (http://localhost:8080)
 - train model with simple mlflow architecture for tracking    
 
-Docker (training container)
+Dockerization 
 ---------------------------
+MLFlow and model(containing training, predicting and FastAPI) services are added to `docker-compose.yml`.
+The MLflow image is located at `docker_images/Dockerfile_mlflow`, while the model image is at `docker_images/Dockerfile_model`.
+
+- to start(or build if not exists) the containers:
+```bash
+docker-compose up
+```
+- to test the FastAPI:
+```bash
+# in a new terminal
+docker-compose start test_model
+```
+- to train the model
+```bash
+# in a new terminal
+docker-compose start training
+```
+- to predict
+```bash
+# in a new terminal
+docker-compose start predict
+```
+
 Use the training image built from `docker/training/Dockerfile.training`.
 
 1) Start MLflow on host (repo root, venv optional):
@@ -176,17 +199,31 @@ docker run --rm -e MLFLOW_TRACKING_URI=http://<your-host-ip>:8080 weather-traini
 
 Docker (prediction container)
 -----------------------------
-Prediction uses the latest trained model from local MLflow artifacts (`mlartifacts`) and writes a CSV with predictions.
+Prediction uses the latest trained model from local MLflow artifacts (`mlartifacts`) and writes a CSV with predictions.  
+Training and prediction both use the **same Docker image** (`weather-training`); only the command and mounted volumes differ.
 
 1) Make sure training has been run at least once (so `mlartifacts/**/artifacts/model.pkl` exists).
 
-2) Run prediction in Docker (host paths, from repo root):
+2) Run prediction in Docker from the repo root.
+
+**Linux / macOS:**
+```bash
+docker run --rm -it \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/mlartifacts:/app/mlartifacts" \
+  weather-training python -u src/models/predict_model.py \
+    /app/data/processed/weatherAUS_10percent_preprocessed.csv \
+    /app/data/processed/weather_predictions.csv
 ```
-docker run --rm -it ^
-  -v "C:/Users/ASK IT SOLUTION/Documents/MLOP/oct25_bmlops_int_weather/data:/app/data" ^
-  -v "C:/Users/ASK IT SOLUTION/Documents/MLOP/oct25_bmlops_int_weather/mlartifacts:/app/mlartifacts" ^
-  weather-training python -u src/models/predict_model.py ^
-    /app/data/processed/weatherAUS_10percent_preprocessed.csv ^
+
+**Windows PowerShell:**
+```powershell
+$proj = (Get-Location).Path
+docker run --rm -it `
+  -v "$proj\data:/app/data" `
+  -v "$proj\mlartifacts:/app/mlartifacts" `
+  weather-training python -u src/models/predict_model.py `
+    /app/data/processed/weatherAUS_10percent_preprocessed.csv `
     /app/data/processed/weather_predictions.csv
 ```
 

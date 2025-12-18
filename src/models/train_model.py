@@ -14,13 +14,13 @@ def training() -> mlflow.models.model.ModelInfo:
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
-    PROCESSED_PATH = os.path.join(THIS_DIR, "../../data/processed/weatherAUS_10percent_preprocessed.csv")
+    PROCESSED_PATH = os.path.join(THIS_DIR, "../../data/processed/weatherAUS_20percent_preprocessed.csv")
 
     # initialize mlflow experiment; allow override via env for Docker
-    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
-    experiment = mlflow.get_experiment_by_name("MLflowTrackingWeatherAustralia_10percent")
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:8080"))
+    experiment = mlflow.get_experiment_by_name("MLflowTrackingWeatherAustralia_20percent")
     if experiment is None:
-        experiment_id = mlflow.create_experiment("MLflowTrackingWeatherAustralia_10percent")
+        experiment_id = mlflow.create_experiment("MLflowTrackingWeatherAustralia_20percent")
     else:
         experiment_id = experiment.experiment_id
     mlflow.set_experiment(experiment_id=experiment_id)
@@ -102,10 +102,10 @@ def training() -> mlflow.models.model.ModelInfo:
         model_info = mlflow.sklearn.log_model(sk_model=best_model,
                                               name="best_model",
                                               input_example=X_train_np[:1])
+        mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
     print("best model is saved.")
 
-    mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
     print("\nBest model (by F1-score):")
     print(f"  Name     : {best_name}")
@@ -118,5 +118,5 @@ def training() -> mlflow.models.model.ModelInfo:
 #####################################################
 
 
-if __name__ == "__main__":
-    training()
+# if __name__ == "__main__":
+#     training()
