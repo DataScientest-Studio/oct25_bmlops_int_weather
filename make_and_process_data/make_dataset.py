@@ -5,16 +5,16 @@ from sqlalchemy import create_engine, text
 
 MYSQL_USER = "root"
 MYSQL_PASSWORD = "root"
-MYSQL_HOST = "weather-mysql"  # Network? eg my_network
-MYSQL_PORT = 3307
+MYSQL_HOST = "weather_sql_container"  # Network? eg my_network
+MYSQL_PORT = 3306
 MYSQL_DB = "weather_db"
 
 
-TABLE_NAME = 'weather_table'
+TABLE_NAME = 'weather_data'
 NEW_TABLE_NAME = 'weather_subset'
 OUTPUT_DIR= "./data:/app/data"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-DATE = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+DATE = datetime.now().strftime("%Y%m%d_%H%M")
 OUTPUT_FILE = f'{OUTPUT_DIR}/weather_subset_{DATE}.csv'
 
 TABLE_PERCENT = 0.2  # x percent of the data
@@ -81,7 +81,7 @@ with engine.connect() as conn:
         CREATE TABLE {NEW_TABLE_NAME} AS
         SELECT *
         FROM {TABLE_NAME}
-        ORDER BY RANDOM()
+        ORDER BY RAND()
         LIMIT {sample_size}
         """
     ))
