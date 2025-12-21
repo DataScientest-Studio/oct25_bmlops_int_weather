@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import os
-from make_dataset import make_dataset
 
 
 
@@ -10,14 +9,15 @@ def vector_normalize(X):
     '''
     X_np = X.values.astype(float)
     norms = np.linalg.norm(X_np, axis=1, keepdims=True)
+    # avoid dividing zero
+    norms[norms == 0] = 1e-10
     X_normalized = X_np /norms
     return pd.DataFrame(X_normalized, columns=X.columns)
 
 
-def preprocessing() -> pd.DataFrame:
+def preprocessing(INPUT_FILE, DATE) -> str:
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-    INPUT_FILE, DATE, df = make_dataset()
-    
+    df= pd.read_csv(INPUT_FILE) 
     #################
     #Handeling Nans
     # Get categorical variables
@@ -40,12 +40,10 @@ def preprocessing() -> pd.DataFrame:
     # Encoding
     
     # Replace RainToday and Raintomorrow with Booleans 
-    df['RainToday'].replace({'No': False, 'Yes': True})
-    df['RainTomorrow'].replace({'No': False, 'Yes': True})
-    
     # ADDED: assign the replacements back to the columns
-    df['RainToday'] = df['RainToday'].replace({'No': False, 'Yes': True})
-    df['RainTomorrow'] = df['RainTomorrow'].replace({'No': False, 'Yes': True})
+    # avoid FutureWarning message
+    df['RainToday'] = df['RainToday'].replace({'No': False, 'Yes': True}).infer_objects(copy=False)
+    df['RainTomorrow'] = df['RainTomorrow'].replace({'No': False, 'Yes': True}).infer_objects(copy=False)
     
     #############
     # vector normalization as an example
@@ -71,7 +69,7 @@ def preprocessing() -> pd.DataFrame:
     df.to_csv(OUTPUT_FILE, index=False)
     print("Preprocessing done")
 
-    return df
+    return OUTPUT_FILE
 
 
 

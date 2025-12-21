@@ -10,23 +10,22 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 
 
 ###################################################
-def training() -> mlflow.models.model.ModelInfo: 
+def training(FILE) -> mlflow.models.model.ModelInfo: 
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
-    PROCESSED_PATH = os.path.join(THIS_DIR, "../../data/processed/weatherAUS_20percent_preprocessed.csv")
 
     # initialize mlflow experiment; allow override via env for Docker
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:8080"))
-    experiment = mlflow.get_experiment_by_name("MLflowTrackingWeatherAustralia_20percent")
+    experiment = mlflow.get_experiment_by_name("MLflowTrackingWeatherAustralia")
     if experiment is None:
-        experiment_id = mlflow.create_experiment("MLflowTrackingWeatherAustralia_20percent")
+        experiment_id = mlflow.create_experiment("MLflowTrackingWeatherAustralia")
     else:
         experiment_id = experiment.experiment_id
     mlflow.set_experiment(experiment_id=experiment_id)
     # mlflow.sklearn.autolog()
 
-    df = pd.read_csv(PROCESSED_PATH)
+    df = pd.read_csv(FILE)
 
     print("data is loaded.")
 

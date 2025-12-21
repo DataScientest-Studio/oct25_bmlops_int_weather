@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, text
 
 
 # add return valu
-def make_dataset() -> tuple[str, str, pd.DataFrame]: 
+def make_dataset() -> tuple[str, str]: 
     MYSQL_USER = "root"
     MYSQL_PASSWORD = "root"
     MYSQL_HOST = "weather_sql_container"  # Network? eg my_network
@@ -99,7 +99,7 @@ def make_dataset() -> tuple[str, str, pd.DataFrame]:
     
     df.to_csv(OUTPUT_FILE, index=False)
 
-    return OUTPUT_FILE, DATE, df
+    return OUTPUT_FILE, DATE
 
 if __name__ == "__main__":
     make_dataset()

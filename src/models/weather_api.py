@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from train_model import training
-from predict_model import predict
+from src.models.train_model import training
+from src.models.predict_model import predict
+from src.data.make_dataset import make_dataset
+from src.data.preprocessing import preprocessing
 from dataclasses import dataclass
 import mlflow
 
@@ -31,24 +33,41 @@ class curr_status:
 training_status = curr_status()
 predict_status = curr_status()
 model_info = None
+FILE_DATASET = None
+FILE_PREPROCESSING = None
+DATE = None
 
 
 def wrapper_train_model():
     training_status.status = "active"
     global model_info
-    model_info = training()
+    model_info = training(FILE_PREPROCESSING)
     training_status.status = "inactive"
 
 
 def wrapper_predict(model_info: mlflow.models.model.ModelInfo):
     predict_status.status = "active"
-    predict(model_info)
+    predict(model_info, FILE_PREPROCESSING)
     predict_status.status = "inactive"
 
 
 @api.get('/')
 def get_index():
     return {'greeting': 'Welcome to weather forcasting api!'}
+
+
+@api.get('/make_dataset', name='make sub-dataset from the raw data', responses=responses)
+def get_make_dataset():
+    global FILE_DATASET, DATE
+    FILE_DATASET, DATE = make_dataset()
+    return {'status': 'sub-dataset is created.'}
+
+
+@api.get('/preprocessing', name='preprocess the data', responses=responses)
+def get_preprocessing():
+    global FILE_PREPROCESSING
+    FILE_PREPROCESSING = preprocessing(FILE_DATASET, DATE)
+    return {'status': 'data is preprocessed.'}
 
 
 @api.get('/predict', name='Predict The Weather', responses=responses)
