@@ -1,11 +1,9 @@
 FROM python:3.12-slim
 
-WORKDIR /make_and_process_data
+WORKDIR /app
 
-COPY make_and_process_data/make_dataset.py ./make_dataset.py
-COPY make_and_process_data/preprocessing.py ./preprocessing.py
+COPY src/data ./src/data
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-# CMD ["python", "/make_and_process_data/make_dataset.py", "/make_and_process_data/preprocessing.py"]
-CMD ["python", "/make_and_process_data/make_dataset.py"]
+CMD python ./src/data/preprocessing.py && tail -f /dev/null
