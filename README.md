@@ -157,10 +157,21 @@ MLFLOW
 
 Dockerization 
 ---------------------------
-MLFlow and model(containing training, predicting and FastAPI) services are added to `docker-compose.yml`.
-The MLflow image is located at `docker_images/Dockerfile_mlflow`, while the model image is at `docker_images/Dockerfile_model`.
+three docker containers: `mysql`, `MLFlow` and `model` services are added to `docker-compose.yml`.
 
-- to start(or build if not exists) the containers:
+The mysql image is located at `mysql/Dockerfile`, the MLflow image is located at `docker_images/Dockerfile_mlflow`, while the model image is at `docker_images/Dockerfile_model`.
+
+- `mysql` container hosts all the raw data
+- `MLFlow` container hosts the mlflow server
+- `model` container hosts the data substracting, data preprocessing, training, predicting, and FastAPI services
+  - `test_model` container tests the FastAPI service
+  - `make_dataset` container substracts the data from the whole data base (hosted by `mysql`)
+  - `preprocess` container preprocesses the sub-dataset (created by `make_dataset`)
+  - `training` container trains the model based on the preprocessed data (created by `preprocess`)
+  - `predict` container predicts the value based on the model (trained by `training`)
+
+
+- to start(or build if not exists) the docker compose:
 ```bash
 docker-compose up
 ```
@@ -168,6 +179,16 @@ docker-compose up
 ```bash
 # in a new terminal
 docker-compose start test_model
+```
+- to substract the data from the whole data base:
+```bash
+# in a new terminal
+docker-compose start make_dataset
+```
+- to preprocess the sub-dataset
+```bash
+# in a new terminal
+docker-compose start prepocess
 ```
 - to train the model
 ```bash
