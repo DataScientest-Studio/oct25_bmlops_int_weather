@@ -1,0 +1,95 @@
+services:
+  # Database
+  # rawdata:
+  #   depends_on:    
+  #   image:
+  # MLFlow
+  MLFlow:
+    image: weather_mlflow:latest
+    build:
+      context: .
+      dockerfile: docker_images/Dockerfile_mlflow
+    container_name: weather_mlflow_container
+    networks:
+      - my_network_by_compose
+    ports:
+      - "8080:8080"
+  # training/predicting
+  model:
+    depends_on: 
+      - MLFlow
+    image: weather_model:latest
+    build:
+      context: .
+      dockerfile: docker_images/Dockerfile_model
+    container_name: weather_model_container
+    networks:
+      - my_network_by_compose
+    ports:
+      - "8000:8000"
+    environment:
+      MLFLOW_TRACKING_URI: 'http://weather_mlflow_container:8080'
+
+  # testing model
+  test_model:
+    image: datascientest/curl:latest
+    networks:
+      - my_network_by_compose
+    command: ["http://weather_model_container:8000"]
+    depends_on:
+      - model
+
+  # training
+  training:
+    image: datascientest/curl:latest
+    restart: "no"
+    networks:
+      - my_network_by_compose
+    command: ["http://weather_model_container:8000/training"]
+    depends_on:
+      - model
+
+  # predict
+  predict:
+    image: datascientest/curl:latest
+    restart: "no"
+    networks:
+      - my_network_by_compose
+    command: ["http://weather_model_container:8000/predict"]
+    depends_on:
+      - model
+    
+  
+  # Streamlit
+  # Streamlit:
+  #   depends_on:
+  #   image:
+  # Preprocessing,DataSplitting and Normalization
+  # Preprocessing:
+  #   depends_on:
+  #   image:
+  # Modeltraining
+  # Training:
+  #   image: weather-training:latest
+  #   # Uncomment and adjust if you run MLflow in a separate service
+  #   # environment:
+  #   #   - MLFLOW_TRACKING_URI=http://mlflow:8080
+  #   volumes:
+  #     - ./data:/app/data
+  #     - ./mlartifacts:/app/mlartifacts
+  # # Prediction
+  # Prediction:
+  #   image: weather-training:latest
+  #   depends_on:
+  #     - Training
+  #   volumes:
+  #     - ./data:/app/data
+  #     - ./mlartifacts:/app/mlartifacts
+  #   command: ["python", "-u", "src/models/predict_model.py", "/app/data/processed/weatherAUS_10percent_preprocessed.csv", "/app/data/processed/weather_predictions.csv"]
+networks:
+  my_network_by_compose: 
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "172.28.0.0/16"
+          gateway: "172.28.0.1"

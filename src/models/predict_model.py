@@ -3,18 +3,26 @@ import mlflow
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import joblib
 import pandas as pd
+from typing import Optional
 
 
 ##################################################
 
 def predict(model_info: mlflow.models.model.ModelInfo,
-            input_path: str = "/home/ubuntu/oct25_bmlops_int_weather/data/processed/weatherAUS_20percent_preprocessed.csv", 
-            output_path: str = "/home/ubuntu/oct25_bmlops_int_weather/data/processed/weather_predictions.csv"):
+            input_path: Optional[str] = None, 
+            output_path: Optional[str] = None):
+    print("Starting prediction...")
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
+    # defaults for paths
+    if input_path is None:
+        input_path = os.path.join(THIS_DIR, "../../data/processed/weatherAUS_20percent_preprocessed.csv")
+    if output_path is None:
+        output_path = os.path.join(THIS_DIR, "../../data/processed/weather_predictions.csv")
 
     model = mlflow.sklearn.load_model(model_info.model_uri)
+
     feature_names = joblib.load(FEATURES_PATH)
 
     df = pd.read_csv(input_path)
@@ -53,6 +61,7 @@ def predict(model_info: mlflow.models.model.ModelInfo,
     result = df.copy()
     result["RainTomorrow_pred"] = y_pred.astype(bool)
     result.to_csv(output_path, index=False)
+    print(f"Predictions saved to: {output_path}")
 
 ######################################################
 

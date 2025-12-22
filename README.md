@@ -117,7 +117,7 @@ src/test.sql.py
 src/data/make_dataset.py
 -> loads the sql, ignores specific columns and simply filter (e.g the location) the big database. The results will be saved in data/raw
 --note: for first instances the data folder and the database are not gitignored!!
--> make dataset filters the .db for e.g location or select a random amonúnt of data for the subset
+-> make dataset filters the .db for e.g location or select a random amonúnt of data for the subset and save it as .csv with current date
 
 Working with a real MySQL project.
 - no databases are shared directly, raw data is weatherAUS.csv
@@ -135,8 +135,99 @@ STEP-BY-STEP guide
 -> probably more useful in containerization
 
 
+MySQL dockerization:
+
+- build Docker image:
+    - docker build -t weather-mysql .
+
+- in another terminal "docker ps" for container ID
+
+Enter MySQL client:
+- e.g. docker exec -it c3ecfcd4a529  mysql -u root -proot (Container ID = c3ecfcd4a529, Password= root)
+check the table with USE weather_db;SELECT COUNT(*) FROM weather_data;SELECT * FROM weather LIMIT 5; -> Outcome: 14560
+- exit with quit
+
+
+
 MLFLOW
 
 - mlflow_server.sh 
     * sets up the mlflow server (http://localhost:8080)
 - train model with simple mlflow architecture for tracking    
+
+Dockerization 
+---------------------------
+MLFlow and model(containing training, predicting and FastAPI) services are added to `docker-compose.yml`.
+The MLflow image is located at `docker_images/Dockerfile_mlflow`, while the model image is at `docker_images/Dockerfile_model`.
+
+- to start(or build if not exists) the containers:
+```bash
+docker-compose up
+```
+- to test the FastAPI:
+```bash
+# in a new terminal
+docker-compose start test_model
+```
+- to train the model
+```bash
+# in a new terminal
+docker-compose start training
+```
+- to predict
+```bash
+# in a new terminal
+docker-compose start predict
+```
+
+Use the training image built from `docker/training/Dockerfile.training`.
+
+1) Start MLflow on host (repo root, venv optional):
+```
+mlflow server --host 0.0.0.0 --port 8080 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlartifacts
+```
+
+2) Build the image:
+```
+docker build -t weather-training -f docker/training/Dockerfile.training .
+```
+
+3) Run training in Docker (set MLFLOW_TRACKING_URI to your host IP):
+```
+docker run --rm -e MLFLOW_TRACKING_URI=http://<your-host-ip>:8080 weather-training python -u src/models/train_model.py
+```
+
+Docker (prediction container)
+-----------------------------
+Prediction uses the latest trained model from local MLflow artifacts (`mlartifacts`) and writes a CSV with predictions.  
+Training and prediction both use the **same Docker image** (`weather-training`); only the command and mounted volumes differ.
+
+1) Make sure training has been run at least once (so `mlartifacts/**/artifacts/model.pkl` exists).
+
+2) Run prediction in Docker from the repo root.
+
+**Linux / macOS:**
+```bash
+docker run --rm -it \
+  -v "$PWD/data:/app/data" \
+  -v "$PWD/mlartifacts:/app/mlartifacts" \
+  weather-training python -u src/models/predict_model.py \
+    /app/data/processed/weatherAUS_10percent_preprocessed.csv \
+    /app/data/processed/weather_predictions.csv
+```
+
+**Windows PowerShell:**
+```powershell
+$proj = (Get-Location).Path
+docker run --rm -it `
+  -v "$proj\data:/app/data" `
+  -v "$proj\mlartifacts:/app/mlartifacts" `
+  weather-training python -u src/models/predict_model.py `
+    /app/data/processed/weatherAUS_10percent_preprocessed.csv `
+    /app/data/processed/weather_predictions.csv
+```
+
+This will:
+- Load the latest `model.pkl` from `mlartifacts/**/artifacts/model.pkl`
+- Evaluate on the input file
+- Save predictions to `data/processed/weather_predictions.csv` on the host.

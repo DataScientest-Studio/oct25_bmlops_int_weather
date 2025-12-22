@@ -16,8 +16,8 @@ def training() -> mlflow.models.model.ModelInfo:
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
     PROCESSED_PATH = os.path.join(THIS_DIR, "../../data/processed/weatherAUS_20percent_preprocessed.csv")
 
-    # initialize mlflow experiment
-    mlflow.set_tracking_uri("http://localhost:8080")
+    # initialize mlflow experiment; allow override via env for Docker
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:8080"))
     experiment = mlflow.get_experiment_by_name("MLflowTrackingWeatherAustralia_20percent")
     if experiment is None:
         experiment_id = mlflow.create_experiment("MLflowTrackingWeatherAustralia_20percent")
@@ -91,7 +91,7 @@ def training() -> mlflow.models.model.ModelInfo:
                     best_name, best_acc, best_prec, best_rec, best_f1, best_model = name, acc, prec, rec, f1, model
 
 
-    with mlflow.start_run(run_name="weather_20percent_best_model") as run:
+    with mlflow.start_run(run_name="weather_10percent_best_model") as run:
         mlflow.log_params(params[best_name])
         # log best model metrics
         mlflow.log_metric("accuracy", best_acc)
@@ -102,10 +102,10 @@ def training() -> mlflow.models.model.ModelInfo:
         model_info = mlflow.sklearn.log_model(sk_model=best_model,
                                               name="best_model",
                                               input_example=X_train_np[:1])
+        mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
     print("best model is saved.")
 
-    mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
     print("\nBest model (by F1-score):")
     print(f"  Name     : {best_name}")
