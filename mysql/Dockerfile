@@ -9,7 +9,7 @@ ENV MYSQL_HOST=weather_sql_container
 WORKDIR /mysql
 
 # CSV und SQL-Skripte kopieren
-COPY mysql/data/weatherAUS.csv /mysql/data/weatherAUS.csv
+COPY data/raw/weatherAUS.csv /mysql/data/weatherAUS.csv
 COPY mysql/create_table.sql /docker-entrypoint-initdb.d/1_create_table.sql
 COPY mysql/import_data.sql /docker-entrypoint-initdb.d/2_import_data.sql
 

@@ -1,8 +1,15 @@
 services:
-  # Database
-  # rawdata:
-  #   depends_on:    
-  #   image:
+  # SQL
+  mysql:
+    image: weather_sql:latest
+    build:
+      context: .
+      dockerfile: mysql/Dockerfile
+    container_name: weather_sql_container
+    networks:
+      - my_network_by_compose
+    ports:
+      - 3305:3306
   # MLFlow
   MLFlow:
     image: weather_mlflow:latest
@@ -18,6 +25,7 @@ services:
   model:
     depends_on: 
       - MLFlow
+      - mysql
     image: weather_model:latest
     build:
       context: .
@@ -58,34 +66,32 @@ services:
     command: ["http://weather_model_container:8000/predict"]
     depends_on:
       - model
+
+  # create the sub-dataset
+  make_dataset:
+    image: datascientest/curl:latest
+    restart: "no"
+    networks:
+      - my_network_by_compose
+    command: ["http://weather_model_container:8000/make_dataset"]
+    depends_on:
+      - model
+
+  # preprocessing the sub-dataset
+  preprocess:
+    image: datascientest/curl:latest
+    restart: "no"
+    networks:
+      - my_network_by_compose
+    command: ["http://weather_model_container:8000/preprocessing"]
+    depends_on:
+      - model
     
   
   # Streamlit
   # Streamlit:
   #   depends_on:
   #   image:
-  # Preprocessing,DataSplitting and Normalization
-  # Preprocessing:
-  #   depends_on:
-  #   image:
-  # Modeltraining
-  # Training:
-  #   image: weather-training:latest
-  #   # Uncomment and adjust if you run MLflow in a separate service
-  #   # environment:
-  #   #   - MLFLOW_TRACKING_URI=http://mlflow:8080
-  #   volumes:
-  #     - ./data:/app/data
-  #     - ./mlartifacts:/app/mlartifacts
-  # # Prediction
-  # Prediction:
-  #   image: weather-training:latest
-  #   depends_on:
-  #     - Training
-  #   volumes:
-  #     - ./data:/app/data
-  #     - ./mlartifacts:/app/mlartifacts
-  #   command: ["python", "-u", "src/models/predict_model.py", "/app/data/processed/weatherAUS_10percent_preprocessed.csv", "/app/data/processed/weather_predictions.csv"]
 networks:
   my_network_by_compose: 
     driver: bridge
