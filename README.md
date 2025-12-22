@@ -164,11 +164,11 @@ The mysql image is located at `mysql/Dockerfile`, the MLflow image is located at
 - `mysql` container hosts all the raw data
 - `MLFlow` container hosts the mlflow server
 - `model` container hosts the data substracting, data preprocessing, training, predicting, and FastAPI services
-  - `test_model` container tests the FastAPI service
-  - `make_dataset` container substracts the data from the whole data base (hosted by `mysql`)
-  - `preprocess` container preprocesses the sub-dataset (created by `make_dataset`)
-  - `training` container trains the model based on the preprocessed data (created by `preprocess`)
-  - `predict` container predicts the value based on the model (trained by `training`)
+  - `test_model` container triggers the command to test the FastAPI service
+  - `make_dataset` container triggers the command to substract the data from the whole data base (hosted by `mysql`)
+  - `preprocess` container triggers the command to preprocesse the sub-dataset (created by `make_dataset`)
+  - `training` container triggers the command to train the model based on the preprocessed data (created by `preprocess`)
+  - `predict` container triggers the command to predict the value based on the model (trained by `training`)
 
 
 - to start(or build if not exists) the docker compose:
