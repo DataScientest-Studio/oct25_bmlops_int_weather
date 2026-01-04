@@ -1,7 +1,10 @@
 #!/bin/bash
-LOG="/app/data/cron.log"  # ← hier ins Docker-Volume
+LOG="/app/data/cron.log"  
+
+sleep 30
 
 echo "Start cron $(date)" >> "$LOG"
+
 
 curl -s http://localhost:8000/make_dataset >> "$LOG"
 curl -s http://localhost::8000/preprocessing >> "$LOG"
