@@ -1,6 +1,6 @@
 USE weather_db;
 SET sql_mode=''; -- needs to be activated
-
+-- Import data from CSV file into weather_data table
 LOAD DATA INFILE '/mysql/data/weatherAUS.csv'
 INTO TABLE weather_data
 FIELDS TERMINATED BY ','
@@ -10,6 +10,7 @@ IGNORE 1 ROWS
  WindGustDir, WindGustSpeed, WindDir9am, WindDir3pm, WindSpeed9am,
  WindSpeed3pm, Humidity9am, Humidity3pm, Pressure9am, Pressure3pm,
  Cloud9am, Cloud3pm, Temp9am, Temp3pm, RainToday, RainTomorrow)
+-- Handle 'NA' values by converting them to NULL
 SET 
   MinTemp       = NULLIF(TRIM(MinTemp), 'NA'),
   MaxTemp       = NULLIF(TRIM(MaxTemp), 'NA'),

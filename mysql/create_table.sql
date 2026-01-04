@@ -1,4 +1,6 @@
+-- Create weather_data table in weather_db database
 USE weather_db;
+-- Define the columns and their data types
 CREATE TABLE weather_data (
     Date DATE,
     Location VARCHAR(255),

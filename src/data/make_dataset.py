@@ -4,11 +4,19 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 
 
-# add return valu
+# Definition of the database created with MySQL Docker container
 def make_dataset() -> tuple[str, str]: 
+    '''
+    Connects to the MySQL database, samples a random subset of 20 % of the weather data,
+    and saves it as a CSV file in the specified output directory.
+    Returns:
+        OUTPUT_FILE (str): Path to the saved CSV file.
+        DATE (str): Timestamp of when the file was created.
+
+    '''
     MYSQL_USER = "root"
     MYSQL_PASSWORD = "root"
-    MYSQL_HOST = "weather_sql_container"  # Network? eg my_network
+    MYSQL_HOST = "weather_sql_container" 
     MYSQL_PORT = 3306
     MYSQL_DB = "weather_db"
     
@@ -69,7 +77,7 @@ def make_dataset() -> tuple[str, str]:
     #query = f"SELECT {', '.join(columns_to_load)} FROM {TABLE_NAME} WHERE Location='Sydney'"
     
     
-    # Filter random x % from the data
+   # Drop the new table if it already exists
     with engine.connect() as conn:
         conn.execute(text(
             f"""
@@ -77,6 +85,7 @@ def make_dataset() -> tuple[str, str]:
             """
         ))
     
+    # Filter random x % from the data
     with engine.connect() as conn:
         total_rows = conn.execute(text(f"SELECT COUNT(*) FROM {TABLE_NAME}")).scalar()
         sample_size = int(total_rows * TABLE_PERCENT)
@@ -90,6 +99,7 @@ def make_dataset() -> tuple[str, str]:
             """
         ))
     
+    # Validatw the new table creation
     with engine.connect() as conn:
         result = conn.execute(text(f"SELECT COUNT(*) FROM {NEW_TABLE_NAME}")).fetchone()
         print(result)   
@@ -97,6 +107,7 @@ def make_dataset() -> tuple[str, str]:
     
     df = pd.read_sql(f"SELECT * FROM {NEW_TABLE_NAME}", engine)
     
+    # Save the sampled data to a CSV file
     df.to_csv(OUTPUT_FILE, index=False)
 
     return OUTPUT_FILE, DATE

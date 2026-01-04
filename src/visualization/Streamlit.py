@@ -238,12 +238,16 @@ if page == pages[5]:
 
     st.write('- The project does predict the weather of tomorrow by using changing data automaticly\n' \
     '- The steps for the modelling and prediction are automized by crontab\n' \
-    '- For the application 4 Docker containers are used. Communicating between each other\n' \
+    '- For the application 5 Docker containers are used. Communicating between each other\n' \
     '- Since the focus of the project is to use machine engineering tools, the model performances are not that good')
 
     st.subheader("Outlook")
 
     st.write('If we had more time for the project we would have tried:\n' \
-    '- 1\n' \
-    '- 2\n' \
-    '- 3')
+    '- 1) Automatisation using Airflow instead of cron\n' \
+    '- Advantages of Airflow: better monitoring of the models, more complex workflows possible\n' \
+    '- 2) Data version control using DagsHub\n' \
+    '- Advantages of DagsHub: better tracking of data changes over time, necessary for frequently updated data\n' \  
+    '- 3) Create one docker container for each single task (e.g. one for preprocessing, one for training etc.)\n' \
+    '- Advantages: better scalability and maintainability of the project\n' \
+    '- 4) Adding more functioniality to the streamlit app (e.g. visualizations of model performances, feature selection in the preprocessing)')
