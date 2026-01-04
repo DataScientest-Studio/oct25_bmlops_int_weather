@@ -1,0 +1,18 @@
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+
+RUN apt-get update && apt-get install -y cron curl
+
+COPY src/cron_pipeline.sh ./src/cron_pipeline.sh
+RUN chmod +x ./src/cron_pipeline.sh
+
+RUN mkdir -p /app/data
+
+RUN echo "*/10 * * * * /app/src/cron_pipeline.sh" > /etc/cron.d/my-cron \
+    && chmod 0644 /etc/cron.d/my-cron \
+    && crontab /etc/cron.d/my-cron
+
+CMD ["cron", "-f"]
