@@ -18,7 +18,12 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
 
     log_stream = StringIO()
-    logging.basicConfig(stream=log_stream, format='%(message)s', level=logging.INFO)
+    logger = logging.getLogger("train_model")
+    logger.setLevel(logging.INFO)
+    logger.handlers = []
+    handler = logging.StreamHandler(log_stream)
+    handler.setFormatter(logging.Formatter('%(message)s'))
+    logger.addHandler(handler)
 
     # initialize mlflow experiment; allow override via env for Docker
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:8080"))
@@ -35,7 +40,7 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
 
     df = pd.read_csv(FILE)
 
-    logging.debug("data is loaded.")
+    logger.info("data is loaded.")
 
     # drop index column if it exists
     if "Unnamed: 0" in df.columns:
@@ -55,7 +60,7 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
     X_test_np = X_test.values
     y_train_np = y_train.values # need to convert for autologging
     y_test_np = y_test.values
-    logging.debug("train-test split is done.")
+    logger.info("train-test split is done.")
 
     # Define baseline models
     params = {
@@ -90,11 +95,11 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
         rec = recall_score(y_test_np, y_pred)
         f1 = f1_score(y_test_np, y_pred)
 
-        logging.info(f"\nModel: {name}\n")
-        logging.info(f"  Accuracy : {acc}\n")
-        logging.info(f"  Precision: {prec}\n")
-        logging.info(f"  Recall   : {rec}\n")
-        logging.info(f"  F1-score : {f1}\n")
+        logger.info(f"\nModel: {name}")
+        logger.info(f"  Accuracy : {acc}")
+        logger.info(f"  Precision: {prec}")
+        logger.info(f"  Recall   : {rec}")
+        logger.info(f"  F1-score : {f1}")
 
         if first_model:
             best_name, best_acc, best_prec, best_rec, best_f1, best_model = name, acc, prec, rec, f1, model
@@ -120,13 +125,13 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
                                               input_example=X_train_np[:1])
         mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
-    logging.debug("best model is saved.")
+    logger.info("best model is saved.")
 
-    logging.info("\nBest model (by F1-score):\n")
-    logging.info(f"  Name     : {best_name}\n")
+    logger.info("\nBest model (by F1-score):")
+    logger.info(f"  Name     : {best_name}")
 
     joblib.dump(list(X.columns), FEATURES_PATH)
-    logging.info("training is finished.\n")
+    logger.info("training is finished.")
 
     if callback:
         callback(100, log_stream.getvalue())

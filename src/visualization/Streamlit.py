@@ -230,8 +230,9 @@ if page == pages[3]:
                             if status == "completed":
                                 st.success("Training completed successfully!")
                                 status_text.empty()
-                                st.write(f"Logs: \n{message}")
                                 training_status.empty()
+                                st.info("Training Logs:")
+                                st.code(message)
                                 break
                             elif status == "failed":
                                 st.error(f"Training failed: {message}")
