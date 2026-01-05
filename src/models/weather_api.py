@@ -46,6 +46,11 @@ def update_training_progress(progress: int, message: str):
     training_status.message = message
 
 
+def update_predict_progress(progress: int, message: str):
+    predict_status.progress = progress
+    predict_status.message = message
+
+
 def wrapper_train_model():
     training_status.status = "running"
     training_status.progress = 0
@@ -64,13 +69,22 @@ def wrapper_train_model():
 
 def wrapper_predict(model_info: mlflow.models.model.ModelInfo):
     predict_status.status = "running"
-    predict(model_info, FILE_PREPROCESSING)
-    predict_status.status = "completed"
+    predict_status.progress = 0
+    predict_status.message = "Starting prediction..."
+    try:
+        predict(model_info, FILE_PREPROCESSING, callback=update_predict_progress)
+        predict_status.status = "completed"
+        predict_status.progress = 100
+        predict_status.message = "Prediction completed."
+    except Exception as e:
+        predict_status.status = "failed"
+        predict_status.message = str(e)
+        raise e
 
 
 @api.get('/')
 def get_index():
-    return {'greeting': 'Welcome to weather forcasting api!'}
+    return {'greeting': 'Welcome to weather forcasting app!'}
 
 
 @api.get('/make_dataset', name='make sub-dataset from the raw data', responses=responses)
@@ -134,4 +148,12 @@ def get_training_status():
         "status": training_status.status,
         "progress": training_status.progress,
         "message": training_status.message
+    }
+
+@api.get('/predict-status', name='Get Predict Status', responses=responses)
+def get_predict_status():
+    return {
+        "status": predict_status.status,
+        "progress": predict_status.progress,
+        "message": predict_status.message
     }

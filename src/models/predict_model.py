@@ -10,7 +10,8 @@ from typing import Optional
 
 def predict(model_info: mlflow.models.model.ModelInfo,
             input_path: Optional[str] = None, 
-            output_path: Optional[str] = None):
+            output_path: Optional[str] = None,
+            callback: Optional[callable] = None):
     print("Starting prediction...")
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
@@ -21,6 +22,8 @@ def predict(model_info: mlflow.models.model.ModelInfo,
     if output_path is None:
         output_path = os.path.join(THIS_DIR, "../../data/processed/weather_predictions.csv")
 
+    if callback:
+        callback(10, "Loading model...")
     model = mlflow.sklearn.load_model(model_info.model_uri)
 
     feature_names = joblib.load(FEATURES_PATH)
@@ -40,9 +43,13 @@ def predict(model_info: mlflow.models.model.ModelInfo,
     df_features = df_features.reindex(columns=feature_names, fill_value=0)
     X = df_features.values
 
+    if callback:
+        callback(50, "Predicting...")
     # Predict
     y_pred = model.predict(X)
 
+    if callback:
+        callback(80, "Evaluating...")
     # If labals exist, print metrics
     if y_true is not None:
         acc = accuracy_score(y_true, y_pred)
@@ -58,6 +65,8 @@ def predict(model_info: mlflow.models.model.ModelInfo,
     else:
         print("No RainTomorrow column found")
 
+    if callback:
+        callback(90, "Saving predictions...")
     result = df.copy()
     result["RainTomorrow_pred"] = y_pred.astype(bool)
     result.to_csv(output_path, index=False)

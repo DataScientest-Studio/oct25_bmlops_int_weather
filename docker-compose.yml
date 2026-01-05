@@ -21,7 +21,7 @@ services:
       - my_network_by_compose
     ports:
       - "8080:8080"
-  # training/predicting
+  # model
   model:
     depends_on: 
       - MLFlow

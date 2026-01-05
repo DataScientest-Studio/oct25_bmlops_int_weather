@@ -81,11 +81,8 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
         y_pred = model.predict(X_test_np)
 
         acc = accuracy_score(y_test_np, y_pred)
-
         prec = precision_score(y_test_np, y_pred)
-
         rec = recall_score(y_test_np, y_pred)
-
         f1 = f1_score(y_test_np, y_pred)
 
         print(f"\nModel: {name}")

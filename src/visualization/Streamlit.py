@@ -208,7 +208,7 @@ if page == pages[3]:
             # Start training
             response = requests.get(f"{MODEL_API}/training")
             if response.status_code == 200:
-                st.success("Training started! Please wait...")
+                training_status = st.success("Training started! Please wait...")
                 
                 # Progress bar and status text
                 progress_bar = st.progress(0)
@@ -229,9 +229,11 @@ if page == pages[3]:
                             
                             if status == "completed":
                                 st.success("Training completed successfully!")
+                                training_status.empty()
                                 break
                             elif status == "failed":
                                 st.error(f"Training failed: {message}")
+                                training_status.empty()
                                 break
                         else:
                             st.warning("Could not fetch status, retrying...")
@@ -258,7 +260,39 @@ if page == pages[4]:
         if MODEL_API is not None:
             response = requests.get(f"{MODEL_API}/predict")
             if response.status_code == 200:
-                st.success("Start to predict!")
+                predict_status = st.success("Start to predict!")
+                # Progress bar and status text
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                while True:
+                    try:
+                        status_response = requests.get(f"{MODEL_API}/predict-status")
+                        if status_response.status_code == 200:
+                            status_data = status_response.json()
+                            status = status_data.get("status")
+                            progress = status_data.get("progress", 0)
+                            message = status_data.get("message", "")
+                            
+                            # Update UI
+                            progress_bar.progress(progress)
+                            status_text.text(f"Status: {status} - {message}")
+                            
+                            if status == "completed":
+                                st.success("Prediction completed successfully!")
+                                predict_status.empty()
+                                break
+                            elif status == "failed":
+                                st.error(f"Prediction failed: {message}")
+                                predict_status.empty()
+                                break
+                        else:
+                            st.warning("Could not fetch status, retrying...")
+                    except Exception as e:
+                        st.error(f"Connection error: {e}")
+                        break
+                        
+                    time.sleep(1)
             else:
                 st.error("Failed to predict.")
 
