@@ -4,6 +4,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import joblib
 import pandas as pd
 from typing import Optional
+import logging
+from io import StringIO
 
 
 ##################################################
@@ -12,7 +14,17 @@ def predict(model_info: mlflow.models.model.ModelInfo,
             input_path: Optional[str] = None, 
             output_path: Optional[str] = None,
             callback: Optional[callable] = None):
-    print("Starting prediction...")
+    log_stream = StringIO()
+    logger = logging.getLogger("predict_model")
+    logger.setLevel(logging.INFO)
+    # Clear existing handlers to avoid duplicates if called multiple times
+    logger.handlers = []
+    handler = logging.StreamHandler(log_stream)
+    handler.setFormatter(logging.Formatter('%(message)s'))
+    logger.addHandler(handler)
+
+    logger.info("Starting prediction...")
+
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
@@ -24,6 +36,7 @@ def predict(model_info: mlflow.models.model.ModelInfo,
 
     if callback:
         callback(10, "Loading model...")
+    logger.info("Loading model from MLFlow...")
     model = mlflow.sklearn.load_model(model_info.model_uri)
 
     feature_names = joblib.load(FEATURES_PATH)
@@ -48,6 +61,8 @@ def predict(model_info: mlflow.models.model.ModelInfo,
     # Predict
     y_pred = model.predict(X)
 
+    logger.info(f"Generated {len(y_pred)} predictions")
+
     if callback:
         callback(80, "Evaluating...")
     # If labals exist, print metrics
@@ -57,20 +72,24 @@ def predict(model_info: mlflow.models.model.ModelInfo,
         rec = recall_score(y_true, y_pred)
         f1 = f1_score(y_true, y_pred)
 
-        print("\nEvaluation on this file:")
-        print(f"  Accuracy : {acc}")
-        print(f"  Precision: {prec}")
-        print(f"  Recall   : {rec}")
-        print(f"  F1-score : {f1}")
+        logger.info("\nEvaluation on this model:")
+        logger.info(f"  Accuracy : {acc}")
+        logger.info(f"  Precision: {prec}")
+        logger.info(f"  Recall   : {rec}")
+        logger.info(f"  F1-score : {f1}")
     else:
-        print("No RainTomorrow column found")
+        logger.info("No RainTomorrow column found")
 
     if callback:
         callback(90, "Saving predictions...")
     result = df.copy()
     result["RainTomorrow_pred"] = y_pred.astype(bool)
     result.to_csv(output_path, index=False)
-    print(f"Predictions saved to: {output_path}")
+
+    logger.info("Prediction completed successfully!")
+
+    if callback:
+        callback(100, log_stream.getvalue())
 
 ######################################################
 
