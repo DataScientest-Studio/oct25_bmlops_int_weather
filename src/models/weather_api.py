@@ -27,7 +27,10 @@ api = FastAPI(
 
 @dataclass
 class curr_status:
+    # status can have four states: inactive, running, completed, failed
     status: str = "inactive"
+    progress: int = 0
+    message: str = ""
 
 
 training_status = curr_status()
@@ -38,17 +41,31 @@ FILE_PREPROCESSING = None
 DATE = None
 
 
+def update_training_progress(progress: int, message: str):
+    training_status.progress = progress
+    training_status.message = message
+
+
 def wrapper_train_model():
-    training_status.status = "active"
-    global model_info
-    model_info = training(FILE_PREPROCESSING)
-    training_status.status = "inactive"
+    training_status.status = "running"
+    training_status.progress = 0
+    training_status.message = "Starting training..."
+    try:
+        global model_info
+        model_info = training(FILE_PREPROCESSING, callback=update_training_progress)
+        training_status.status = "completed"
+        training_status.progress = 100
+        training_status.message = "Training completed."
+    except Exception as e:
+        training_status.status = "failed"
+        training_status.message = str(e)
+        raise e
 
 
 def wrapper_predict(model_info: mlflow.models.model.ModelInfo):
-    predict_status.status = "active"
+    predict_status.status = "running"
     predict(model_info, FILE_PREPROCESSING)
-    predict_status.status = "inactive"
+    predict_status.status = "completed"
 
 
 @api.get('/')
@@ -73,11 +90,11 @@ def get_preprocessing():
 @api.get('/predict', name='Predict The Weather', responses=responses)
 def get_predict(background_tasks: BackgroundTasks):
     try:
-        if training_status.status == "active":
+        if training_status.status != "completed":
             raise HTTPException(
                 status_code=503,
-                detail='Training is in progress, please try again later')
-        elif predict_status.status == "active":
+                detail='Training is not finished, please try to train the model first')
+        elif predict_status.status == "running":
             raise HTTPException(
                 status_code=503,
                 detail='Prediction is in progress, please try again later')
@@ -88,6 +105,8 @@ def get_predict(background_tasks: BackgroundTasks):
         else:
             background_tasks.add_task(wrapper_predict, model_info)
             return {'status': 'prediction started.'}
+    except HTTPException:
+        raise
     except Exception as e:
         return {'error': str(e)}
 
@@ -96,17 +115,23 @@ def get_predict(background_tasks: BackgroundTasks):
          responses=responses)
 def get_training(background_tasks: BackgroundTasks):
     try:
-        if training_status.status == "active":
+        if training_status.status == "running":
             raise HTTPException(
                 status_code=503,
                 detail='Training is in progress, please try again later')
-        elif training_status.status == "inactive":
+        elif training_status.status == "inactive" or training_status.status == "completed" or training_status.status == "failed":
             background_tasks.add_task(wrapper_train_model)
             return {'status': 'training started'}
+    except HTTPException:
+        raise
     except Exception as e:
         return {'error': str(e)}
 
 
-# if __name__ == "__main__":
-#     wrapper_train_model()
-#     wrapper_predict(model_info)
+@api.get('/training-status', name='Get Training Status', responses=responses)
+def get_training_status():
+    return {
+        "status": training_status.status,
+        "progress": training_status.progress,
+        "message": training_status.message
+    }

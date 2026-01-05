@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 
 
 ###################################################
-def training(FILE) -> mlflow.models.model.ModelInfo: 
+def training(FILE, callback=None) -> mlflow.models.model.ModelInfo: 
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
@@ -25,6 +25,9 @@ def training(FILE) -> mlflow.models.model.ModelInfo:
     mlflow.set_experiment(experiment_id=experiment_id)
     # mlflow.sklearn.autolog()
 
+    if callback:
+        callback(10, "Loading data...")
+
     df = pd.read_csv(FILE)
 
     print("data is loaded.")
@@ -35,6 +38,9 @@ def training(FILE) -> mlflow.models.model.ModelInfo:
 
     y = df["RainTomorrow"].astype(int)   
     X = df.drop(columns=["RainTomorrow"])
+
+    if callback:
+        callback(20, "Splitting data...")
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.25, random_state=7, stratify=y
@@ -62,33 +68,42 @@ def training(FILE) -> mlflow.models.model.ModelInfo:
 
     # with mlflow.start_run(run_name="weather_20percent_best_model") as parent_run:
     first_model = True
+    total_model = len(models)
+    i = 0
     for name, model in models.items():
         # with mlflow.start_run(run_name=name, nested=True) as child_run:
-            model.fit(X_train_np, y_train_np)
-            y_pred = model.predict(X_test_np)
+        if callback:
+            callback(20 + int((90-20)/total_model * i),
+                     f"Training {name}...")
+            i += 1
 
-            acc = accuracy_score(y_test_np, y_pred)
+        model.fit(X_train_np, y_train_np)
+        y_pred = model.predict(X_test_np)
 
-            prec = precision_score(y_test_np, y_pred)
+        acc = accuracy_score(y_test_np, y_pred)
 
-            rec = recall_score(y_test_np, y_pred)
+        prec = precision_score(y_test_np, y_pred)
 
-            f1 = f1_score(y_test_np, y_pred)
+        rec = recall_score(y_test_np, y_pred)
 
-            print(f"\nModel: {name}")
-            print(f"  Accuracy : {acc}")
-            print(f"  Precision: {prec}")
-            print(f"  Recall   : {rec}")
-            print(f"  F1-score : {f1}")
+        f1 = f1_score(y_test_np, y_pred)
 
-            if first_model:
+        print(f"\nModel: {name}")
+        print(f"  Accuracy : {acc}")
+        print(f"  Precision: {prec}")
+        print(f"  Recall   : {rec}")
+        print(f"  F1-score : {f1}")
+
+        if first_model:
+            best_name, best_acc, best_prec, best_rec, best_f1, best_model = name, acc, prec, rec, f1, model
+            first_model = False
+        else:
+            # Choose best model by F1-score
+            if f1 > best_f1:
                 best_name, best_acc, best_prec, best_rec, best_f1, best_model = name, acc, prec, rec, f1, model
-                first_model = False
-            else:
-                # Choose best model by F1-score
-                if f1 > best_f1:
-                    best_name, best_acc, best_prec, best_rec, best_f1, best_model = name, acc, prec, rec, f1, model
 
+    if callback:
+        callback(90, "Logging best model...")
 
     with mlflow.start_run(run_name="weather_10percent_best_model") as run:
         mlflow.log_params(params[best_name])

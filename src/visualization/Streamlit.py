@@ -7,6 +7,7 @@ from graphviz import Digraph
 import requests
 from sqlalchemy import create_engine
 import os
+import time
 
 ###***************************************************************************************************************
 
@@ -204,11 +205,43 @@ if page == pages[3]:
     if st.button("Train model"):
         MODEL_API = os.getenv("MODEL_URI")
         if MODEL_API is not None:
+            # Start training
             response = requests.get(f"{MODEL_API}/training")
             if response.status_code == 200:
-                st.success("Start to train Model!")
+                st.success("Training started! Please wait...")
+                
+                # Progress bar and status text
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                while True:
+                    try:
+                        status_response = requests.get(f"{MODEL_API}/training-status")
+                        if status_response.status_code == 200:
+                            status_data = status_response.json()
+                            status = status_data.get("status")
+                            progress = status_data.get("progress", 0)
+                            message = status_data.get("message", "")
+                            
+                            # Update UI
+                            progress_bar.progress(progress)
+                            status_text.text(f"Status: {status} - {message}")
+                            
+                            if status == "completed":
+                                st.success("Training completed successfully!")
+                                break
+                            elif status == "failed":
+                                st.error(f"Training failed: {message}")
+                                break
+                        else:
+                            st.warning("Could not fetch status, retrying...")
+                    except Exception as e:
+                        st.error(f"Connection error: {e}")
+                        break
+                        
+                    time.sleep(1)
             else:
-                st.error("Failed to train model.")
+                st.error("Failed to start training.")
 
 
 ###**************************************************************************************************************
