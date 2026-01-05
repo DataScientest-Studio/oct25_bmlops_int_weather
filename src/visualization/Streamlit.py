@@ -247,7 +247,8 @@ if page == pages[5]:
     '- 1) Automatisation using Airflow instead of cron\n' \
     '- Advantages of Airflow: better monitoring of the models, more complex workflows possible\n' \
     '- 2) Data version control using DagsHub\n' \
-    '- Advantages of DagsHub: better tracking of data changes over time, necessary for frequently updated data\n' \  
+    '- Advantages of DagsHub: better tracking of data changes over time, necessary for frequently updated data\n' \
     '- 3) Create one docker container for each single task (e.g. one for preprocessing, one for training etc.)\n' \
     '- Advantages: better scalability and maintainability of the project\n' \
     '- 4) Adding more functioniality to the streamlit app (e.g. visualizations of model performances, feature selection in the preprocessing)')
+
