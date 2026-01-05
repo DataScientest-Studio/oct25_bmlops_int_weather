@@ -59,8 +59,6 @@ def wrapper_train_model():
         global model_info
         model_info = training(FILE_PREPROCESSING, callback=update_training_progress)
         training_status.status = "completed"
-        training_status.progress = 100
-        training_status.message = "Training completed."
     except Exception as e:
         training_status.status = "failed"
         training_status.message = str(e)
@@ -74,8 +72,6 @@ def wrapper_predict(model_info: mlflow.models.model.ModelInfo):
     try:
         predict(model_info, FILE_PREPROCESSING, callback=update_predict_progress)
         predict_status.status = "completed"
-        predict_status.progress = 100
-        predict_status.message = "Prediction completed."
     except Exception as e:
         predict_status.status = "failed"
         predict_status.message = str(e)

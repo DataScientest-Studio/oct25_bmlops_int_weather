@@ -1,10 +1,12 @@
 import os
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import joblib
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
 import pandas as pd
 import mlflow
+import logging
+from io import StringIO
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 
@@ -14,6 +16,9 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     MODEL_DIR = os.path.join(THIS_DIR, "../../models")
     FEATURES_PATH = os.path.join(MODEL_DIR, "features.pkl")
+
+    log_stream = StringIO()
+    logging.basicConfig(stream=log_stream, format='%(message)s', level=logging.INFO)
 
     # initialize mlflow experiment; allow override via env for Docker
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:8080"))
@@ -30,7 +35,7 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
 
     df = pd.read_csv(FILE)
 
-    print("data is loaded.")
+    logging.debug("data is loaded.")
 
     # drop index column if it exists
     if "Unnamed: 0" in df.columns:
@@ -50,7 +55,7 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
     X_test_np = X_test.values
     y_train_np = y_train.values # need to convert for autologging
     y_test_np = y_test.values
-    print("train-test split is done.")
+    logging.debug("train-test split is done.")
 
     # Define baseline models
     params = {
@@ -85,11 +90,11 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
         rec = recall_score(y_test_np, y_pred)
         f1 = f1_score(y_test_np, y_pred)
 
-        print(f"\nModel: {name}")
-        print(f"  Accuracy : {acc}")
-        print(f"  Precision: {prec}")
-        print(f"  Recall   : {rec}")
-        print(f"  F1-score : {f1}")
+        logging.info(f"\nModel: {name}\n")
+        logging.info(f"  Accuracy : {acc}\n")
+        logging.info(f"  Precision: {prec}\n")
+        logging.info(f"  Recall   : {rec}\n")
+        logging.info(f"  F1-score : {f1}\n")
 
         if first_model:
             best_name, best_acc, best_prec, best_rec, best_f1, best_model = name, acc, prec, rec, f1, model
@@ -115,14 +120,16 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
                                               input_example=X_train_np[:1])
         mlflow.set_tag("Training Info", "best model for Weather Australia data")
 
-    print("best model is saved.")
+    logging.debug("best model is saved.")
 
-
-    print("\nBest model (by F1-score):")
-    print(f"  Name     : {best_name}")
+    logging.info("\nBest model (by F1-score):\n")
+    logging.info(f"  Name     : {best_name}\n")
 
     joblib.dump(list(X.columns), FEATURES_PATH)
-    print("training is finished.")
+    logging.info("training is finished.\n")
+
+    if callback:
+        callback(100, log_stream.getvalue())
 
     return model_info
 
