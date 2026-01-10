@@ -347,19 +347,18 @@ if page == pages[5]:
 
     st.subheader("Conclusion")
 
-    st.write('- The project does predict the weather of tomorrow by using changing data automaticly\n' \
+    st.write('- The project does predict the weather of tomorrow by using changing data automatically\n' \
     '- The steps for the making dataset, preprocessing, and modelling are automized by crontab\n' \
     '- For the application 5 Docker containers are used. Communicating between each other\n')
 
     st.subheader("Outlook")
 
-    st.write('If we had more time for the project we would have tried:\n' \
-    '1) Automatisation using Airflow instead of cron  \n' \
-    '   Advantages of Airflow: better monitoring of the models, more complex workflows possible\n' \
-    '2) Data version control using DagsHub  \n' \
-    '   Advantages of DagsHub: better tracking of data changes over time, necessary for frequently updated data\n' \
-    '3) Exploring performance monitoring tools: Prometheus and Grafana  \n' \
-    '   Advantages of Prometheus and Grafana: better visibility of the system performance, easier to set up and maintain\n' \
-    '4) Adding a Securing for the API for example with password\n' \
-    '5) Adding more functioniality to the streamlit app (e.g. visualizations of model performances, feature selection in the preprocessing)')
+    st.write('When we had more time for the project we would extend it with:\n' \
+    '1) Production-grade orchestration (e.g. Airflow) instead of cron,  \n' \
+    '   Advantages of Airflow: support monitoring of the models, more complex workflows possible\n' \
+    '2) Data and experiment versioning using DagsHub  \n' \
+    '   Advantages of DagsHub: better tracking of data, code and model artifacts changes over time\n' \
+    '3) Better observability and security  \n'
+    '   Prometheus and Grafana, authenticated access to the API and Streamlit app  \n' \
+    '4) End-to-end CI/CD for the ML pipeline (tests, linting and automated deployment of models and API).\n')
 
