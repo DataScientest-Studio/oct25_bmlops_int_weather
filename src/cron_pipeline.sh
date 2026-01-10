@@ -6,8 +6,8 @@ sleep 30
 echo "Start cron $(date)" >> "$LOG"
 
 # Trigger the dataset creation, preprocessing, and training via API
-curl -s http://weather_model_container:8000/make_dataset >> "$LOG"
-curl -s http://weather_model_container:8000/preprocessing >> "$LOG"
-curl -s http://weather_model_container:8000/training >> "$LOG"
+curl -s ${MODEL_URI}/make_dataset >> "$LOG"
+curl -s ${MODEL_URI}/preprocessing >> "$LOG"
+curl -s ${MODEL_URI}/training >> "$LOG"
 
 echo "End cron $(date)" >> "$LOG"

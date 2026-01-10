@@ -69,7 +69,8 @@ services:
       - my_network_by_compose
     volumes:
       - shared-data:/app/data
-
+    environment:
+      MODEL_URI: 'http://weather_model_container:8000'
 
   # testing model
   test_model:
