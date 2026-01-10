@@ -1,13 +1,12 @@
-FROM ubuntu:20.04
-ENV DEBIAN_FRONTEND=noninteractive
+FROM python:3.12.12-slim
 WORKDIR /app
-COPY pyproject.toml uv.lock ./
+COPY requirements.txt ./
 COPY src/data ./src/data
 COPY src/models ./src/models
 COPY .git ./git
-RUN apt-get update && apt-get install -y curl git && \
-  curl -LsSf https://astral.sh/uv/install.sh | sh && \
-  $HOME/.local/bin/uv sync && . .venv/bin/activate
+RUN apt-get update && apt-get install -y git && \
+  rm -rf /var/lib/apt/lists/* && \
+  pip install -r requirements.txt
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="${PYTHONPATH}:/app"
 EXPOSE 8000

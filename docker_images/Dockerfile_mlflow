@@ -1,11 +1,7 @@
-FROM ubuntu:20.04
-ENV DEBIAN_FRONTEND=noninteractive
+FROM python:3.12.12-slim
 WORKDIR /app
-COPY pyproject.toml uv.lock ./
-RUN apt-get update && apt-get install -y curl && \
-  curl -LsSf https://astral.sh/uv/install.sh | sh &&  \
-  $HOME/.local/bin/uv sync && . .venv/bin/activate
-ENV PATH="/app/.venv/bin:$PATH"
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
 EXPOSE 8080
 CMD mlflow server \
   --host 0.0.0.0 \
