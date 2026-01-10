@@ -348,9 +348,8 @@ if page == pages[5]:
     st.subheader("Conclusion")
 
     st.write('- The project does predict the weather of tomorrow by using changing data automaticly\n' \
-    '- The steps for the modelling and prediction are automized by crontab\n' \
-    '- For the application 5 Docker containers are used. Communicating between each other\n' \
-    '- Since the focus of the project is to use machine engineering tools, the model performances are not that good')
+    '- The steps for the making dataset, preprocessing, and modelling are automized by crontab\n' \
+    '- For the application 5 Docker containers are used. Communicating between each other\n')
 
     st.subheader("Outlook")
 
