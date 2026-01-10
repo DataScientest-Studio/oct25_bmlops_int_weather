@@ -7,7 +7,7 @@ import os
 def vector_normalize(X):
     ''' Normalize the data using vector normalization
     '''
-    X_np = X.values.astype(float)
+    X_np= np.nan_to_num(X.values.astype(float))
     norms = np.linalg.norm(X_np, axis=1, keepdims=True)
     # avoid dividing zero
     norms[norms == 0] = 1e-10
@@ -17,56 +17,71 @@ def vector_normalize(X):
 # define preprocesing
 def preprocessing(INPUT_FILE, DATE) -> str:
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-    df= pd.read_csv(INPUT_FILE) 
+    df= pd.read_csv(INPUT_FILE).dropna(how='all')
+    # correct import
+    if df['RainTomorrow'].dtype == object:
+        df['RainTomorrow'] = df['RainTomorrow'].str.strip()
+        df['RainTomorrow'] = df['RainTomorrow'].replace({'NA': np.nan})
+ 
     #################
     #Handeling Nans
+
+    # ADDED: drop Date
+    if 'Date' in df.columns:
+        df = df.drop(columns=['Date'])
+
+    # drop nans in target
+    df = df.dropna(subset=['RainTomorrow'])
+
     # Get categorical variables
     s = (df.dtypes == "object")
     object_cols = list(s[s].index)
-    
+
     # fill missing values of categorical values with mode
     for i in object_cols:
         df[i].fillna(df[i].mode()[0], inplace=True)
     
     # Get numerical variables
-    t = (df.dtypes == "float64")
-    num_cols = list(t[t].index)
-    
+    num_cols = df.select_dtypes(include=['float64']).columns
+
     # fill missing values of numeric variables with median
     for i in num_cols:
         df[i].fillna(df[i].median(), inplace=True)
     
-    #############
-    # Encoding
+    # vector normalization for numerical columns
+
+    X_norm = vector_normalize(df[num_cols])  # falls noch NaNs drin sind
+    X_norm.index = df.index  # sicherstellen, dass Index passt
+    df[num_cols] = X_norm
+
+    # Encode categorical features with get_dummies
     
+    EXCLUDE = ["RainTomorrow", "RainToday"]
+
+    df_encoded = pd.get_dummies(
+        df.drop(columns=EXCLUDE),
+        dtype=float
+    )
+
+    # Add again RainTomorrow and RainToday
+    df_encoded["RainTomorrow"] = df["RainTomorrow"]
+    df_encoded["RainToday"] = df["RainToday"]
+
+  
     # Replace RainToday and Raintomorrow with Booleans 
     # ADDED: assign the replacements back to the columns
     # avoid FutureWarning message
-    df['RainToday'] = df['RainToday'].replace({'No': False, 'Yes': True}).infer_objects(copy=False)
-    df['RainTomorrow'] = df['RainTomorrow'].replace({'No': False, 'Yes': True}).infer_objects(copy=False)
+    df_encoded['RainToday'] = df_encoded['RainToday'].replace({'No': False, 'Yes': True}).infer_objects(copy=False)
+    df_encoded['RainTomorrow'] = df_encoded['RainTomorrow'].replace({'No': False, 'Yes': True}).infer_objects(copy=False)
     
-    #############
-    # vector normalization as an example
-    
-    num_cols = df.select_dtypes(include=[np.number]).columns # only  columns with numbers
-    df[num_cols] = vector_normalize(df[num_cols])
-    
-    # ADDED: drop Date
-    if 'Date' in df.columns:
-        df = df.drop(columns=['Date'])
-    
-    # Encode with get_dummies
-    df = pd.get_dummies(df, dtype=float)
-    
-    
-    
+
     #############
     #Exporting file
     
     OUTPUT_DIR = os.path.join(THIS_DIR, "../../data/processed")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     OUTPUT_FILE = f'{OUTPUT_DIR}/weatherAUS_preprocessed_{DATE}.csv'
-    df.to_csv(OUTPUT_FILE, index=False)
+    df_encoded.to_csv(OUTPUT_FILE, index=False)
     print("Preprocessing done")
 
     return OUTPUT_FILE
