@@ -66,11 +66,33 @@ def training(FILE, callback=None) -> mlflow.models.model.ModelInfo:
 
     # Define baseline models
     params = {
-        "KNeighbors": {"n_neighbors": 10},
-        "DecisionTree": {"max_depth": 10},
-        "RandomForest": {"n_estimators": 10, "max_depth": 10},
-        "GradientBoosting": {},
+        "KNeighbors": {
+            "n_neighbors": 25,
+            "weights": "distance",
+            "metric": "minkowski",
+            "p": 2,
+        },
+        "DecisionTree": {
+            "max_depth": 6,
+            "min_samples_split": 20,
+            "min_samples_leaf": 10,
+            "max_features": "sqrt",
+        },
+        "RandomForest": {
+            "n_estimators": 200,
+            "max_depth": 10,
+            "min_samples_leaf": 5,
+            "max_features": "sqrt",
+            "n_jobs": -1,
+        },
+        "GradientBoosting": {
+            "n_estimators": 150,
+            "learning_rate": 0.1,
+            "max_depth": 3,
+            "subsample": 0.8,
+        },
     }
+
     models = {
         "KNeighbors": KNeighborsClassifier(**params["KNeighbors"]),
         "DecisionTree": DecisionTreeClassifier(**params["DecisionTree"]),
