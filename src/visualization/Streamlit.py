@@ -349,7 +349,9 @@ if page == pages[5]:
 
     st.write('- The project does predict the weather of tomorrow by using changing data automatically\n' \
     '- The steps for the making dataset, preprocessing, and modelling are automized by crontab\n' \
-    '- For the application 5 Docker containers are used. Communicating between each other\n')
+    '- For the application 5 Docker containers are used via docker compose. Communicating is managed by docker compose network.\n' \
+    '- Model training is tracked, and the best model is registerd by the MLFlow,\n'
+    '- FastAPI application is used to expose the core functionalities of the project.\n')
 
     st.subheader("Outlook")
 
