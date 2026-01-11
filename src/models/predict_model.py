@@ -1,6 +1,6 @@
 import os
 import mlflow
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import joblib
 import pandas as pd
 from typing import Optional
@@ -81,6 +81,14 @@ def predict(model_info: mlflow.models.model.ModelInfo,
         logger.info(f"  Precision: {prec}")
         logger.info(f"  Recall   : {rec}")
         logger.info(f"  F1-score : {f1}")
+
+        cm =confusion_matrix(y_true, y_pred)
+        labels = ["No Rain", "Rain"] 
+        clabels = ["No Rain Pred.", "Rain Pred."] 
+        df_cm = pd.DataFrame(cm, index=labels, columns=clabels)
+
+        logger.info("\nConfusion Matrix:")
+        logger.info(df_cm.to_string())
     else:
         logger.info("No RainTomorrow column found")
 
