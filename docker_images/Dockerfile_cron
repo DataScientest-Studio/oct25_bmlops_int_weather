@@ -11,10 +11,9 @@ COPY src/cron_pipeline.sh ./src/cron_pipeline.sh
 RUN chmod +x ./src/cron_pipeline.sh
 
 # Create necessary directories
-RUN mkdir -p /app/data
 
 # Defining the cron job and executing it every 10 minutes
-RUN echo "*/10 * * * * /app/src/cron_pipeline.sh" > /etc/cron.d/my-cron \ 
+RUN echo "*/10 * * * * root MODEL_URI=${MODEL_URI:-http://weather_model_container:8000} /app/src/cron_pipeline.sh" > /etc/cron.d/my-cron \
     && chmod 0644 /etc/cron.d/my-cron \
     && crontab /etc/cron.d/my-cron
 
