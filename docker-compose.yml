@@ -64,7 +64,7 @@ services:
     build:
       context: .
       dockerfile: docker_images/Dockerfile_cron
-    container_name: cron
+    container_name: weather_cron_container
     networks:
       - my_network_by_compose
     volumes:
