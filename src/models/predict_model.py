@@ -89,6 +89,7 @@ def predict(model_info: mlflow.models.model.ModelInfo,
 
         logger.info("\nConfusion Matrix:")
         logger.info(df_cm.to_string())
+        
     else:
         logger.info("No RainTomorrow column found")
 
